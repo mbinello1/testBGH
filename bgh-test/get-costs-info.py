@@ -1,19 +1,31 @@
+#FALTA
+#ver lo del api call al cost explorer
+#REVISAR si asi esta bien el tema de lambda, como hago para importar pandas a lambda en aws??
+#REVISAR el tema del directorio, donde se guardaria o como hacemos? 
+    #me imagino que en vez de llamar al csv, si hago a sentencia del api call y que use el archivo de una
+    #va a funcionar mejor
+
+#LISTO
+#Llamar al csv del resultado
+#La logica del codigo esta armada
+#la subida a s3 en teoria deberia funcionar, sino aparte esta guardandose local
+#usar lambda para ejecutar el codigo
+
 import pandas as pd
 import os
 import boto3
 
+#vamos al directorio donde tenemos guardado el archivo de la api del cost explorer
 os.chdir('c:/Users/Matias/Documents/GitHub/testBGH/bgh-test')
 
 #primero queremos traer la info de la api del cost explorer
-#damos por hecho que la info del cost explorer es del csv que pasaron
+#damos por hecho que la info del cost explorer es del csv que pasaron?
+#o hacemos un api call simulando el pedidode info y que el resultado es el csv?
 
 #traemos la info del csv
 def get_info():
     data = pd.read_csv('cost_info.csv')
     return data
-
-#con la info ya lista, va el codigo para hacer los calculos de cuanto gastan,
-#cuanto hay que cobrar el el costo total
 
 #transformamos la data para que este en formato numerico
 def transform_data(df):
@@ -39,7 +51,6 @@ def info(df):
     for i in range(len(df_2)):
         #print(df_2.loc[i])
         #print()
-
         #los if de abajo se fijan el consumo y hacen los calculos necesarios segun cada escenario
         if df_2.loc[i]['consumo_mensual'] < 1000:
             df_2.loc[i,'facturacion_local'] = 250.0
@@ -63,8 +74,9 @@ def upload_file_to_s3(file):
     bucket = s3.Bucket(bucket_name)
     response = bucket.upload_file(file_name, object_name)
 
-#se guarda el archivo local, borrar cuando termine de probar
-info(transform_data(get_info())).to_csv('costs.csv')
-file = info(transform_data(get_info())).to_csv('costs.csv')
-#se guarda el archivo en el bucket
-upload_file_to_s3(file)
+def lambda_handler(event, context):
+    file = info(transform_data(get_info())).to_csv('costs.csv')
+    #se guarda el archivo en el bucket
+    upload_file_to_s3(file)
+
+#lambda_handler()
