@@ -1,31 +1,20 @@
-#FALTA
-#ver lo del api call al cost explorer
-#REVISAR si asi esta bien el tema de lambda, como hago para importar pandas a lambda en aws??
-#REVISAR el tema del directorio, donde se guardaria o como hacemos? 
-    #me imagino que en vez de llamar al csv, si hago a sentencia del api call y que use el archivo de una
-    #va a funcionar mejor
-
-#LISTO
-#Llamar al csv del resultado
-#La logica del codigo esta armada
-#la subida a s3 en teoria deberia funcionar, sino aparte esta guardandose local
-#usar lambda para ejecutar el codigo
+#es necesario insertar una layer en la lambda para que se pueda importar pandas y trabajar con DF
 
 import pandas as pd
-import os
 import boto3
 
+#ESTO QUE ESTA ABAJO NO IRIA SI SE INCLUYE EL CODIGO PARA TRAER EL ARCHIVO 
+#SIN TENER QUE GUARDARLO EN ALGUN LUGAR ANTES
+#-----------------------------------------------------------------------------------------------
+import os
 #vamos al directorio donde tenemos guardado el archivo de la api del cost explorer
 os.chdir('c:/Users/Matias/Documents/GitHub/testBGH/bgh-test')
-
-#primero queremos traer la info de la api del cost explorer
-#damos por hecho que la info del cost explorer es del csv que pasaron?
-#o hacemos un api call simulando el pedidode info y que el resultado es el csv?
 
 #traemos la info del csv
 def get_info():
     data = pd.read_csv('cost_info.csv')
     return data
+#-----------------------------------------------------------------------------------------------
 
 #transformamos la data para que este en formato numerico
 def transform_data(df):
@@ -39,18 +28,15 @@ def transform_data(df):
         #despues usamos replace() para eliminar el "." y poder convertir el texto a float
         'consumo_mensual' : float(df.loc[i]['Consumo mensual AWS'][df.loc[i]['Consumo mensual AWS'].find('$') + 1:].replace(".",""))},
         ignore_index = True)
-        #print(df_clean.loc[i])
-        #print()
     return df_clean
 
-#se genera un nuevo df las 2 columnas a insertar/calcular
+#se genera en un nuevo df las 2 columnas nuevas
+#y se hacen los calculos para los costos
 def info(df):
     df_2 = df
     df_2['facturacion_local'] = 0.0
     df_2['cobro_total'] = 0.0
     for i in range(len(df_2)):
-        #print(df_2.loc[i])
-        #print()
         #los if de abajo se fijan el consumo y hacen los calculos necesarios segun cada escenario
         if df_2.loc[i]['consumo_mensual'] < 1000:
             df_2.loc[i,'facturacion_local'] = 250.0
@@ -62,10 +48,10 @@ def info(df):
             df_2.loc[i,'facturacion_local'] = df_2.loc[i,'consumo_mensual'] * 0.35
             df_2.loc[i,'cobro_total'] = df_2.loc[i,'consumo_mensual'] + df_2.loc[i,'facturacion_local']
         else:
-            print('Error')
+            print('Error en los montos, revisar formatos')
     return df_2
 
-#con eso listo, lo guardamos en un csv que se sube a un bucket de S3
+#guardamos en un csv que se sube a un bucket de S3
 def upload_file_to_s3(file):
     s3 = boto3.resource("s3")
     bucket_name = "bucket-a-usar" #aca va el bucket donde queremos guardar la info
