@@ -62,4 +62,5 @@ def lambda_handler(event, context):
     #se guarda el archivo en el bucket
     upload_file_to_s3(file)
 
-#lambda_handler()
+#si en vez del lambda_handler se corre el codigo de abajo se guarda el archivo costs.csv que se ve dentro de la carpeta
+#info(transform_data(get_info())).to_csv('costs.csv')
