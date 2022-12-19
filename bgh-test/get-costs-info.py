@@ -3,8 +3,7 @@
 import pandas as pd
 import boto3
 
-#ESTO QUE ESTA ABAJO NO IRIA SI SE INCLUYE EL CODIGO PARA TRAER EL ARCHIVO 
-#SIN TENER QUE GUARDARLO EN ALGUN LUGAR ANTES
+#ESTO QUE ESTA ABAJO NO IRIA SI SE INCLUYE EL CODIGO PARA TRAER EL ARCHIVO SIN TENER QUE GUARDARLO EN ALGUN LUGAR ANTES
 #-----------------------------------------------------------------------------------------------
 import os
 #vamos al directorio donde tenemos guardado el archivo de la api del cost explorer
@@ -23,15 +22,13 @@ def transform_data(df):
     for i in range(len(df)):
         #esta primera linea guarda la inforamcion del cliente
         df_clean = df_clean.append({'Cliente' : df.loc[i]['Cliente'], 
-        #en esta segunda parte, primero buscamos la posicion del signo $ para movernos un caracter
-        #a la derecha y asi obtener todo el numero
-        #despues usamos replace() para eliminar el "." y poder convertir el texto a float
+#en esta segunda parte, primero buscamos la posicion del signo $ para movernos un caracter a la derecha y asi obtener todo el numero
+#despues usamos replace() para eliminar el "." y poder convertir el texto a float
         'consumo_mensual' : float(df.loc[i]['Consumo mensual AWS'][df.loc[i]['Consumo mensual AWS'].find('$') + 1:].replace(".",""))},
         ignore_index = True)
     return df_clean
 
-#se genera en un nuevo df las 2 columnas nuevas
-#y se hacen los calculos para los costos
+#se genera en un nuevo df las 2 columnas nuevas y se hacen los calculos para los costos
 def info(df):
     df_2 = df
     df_2['facturacion_local'] = 0.0
